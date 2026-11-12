@@ -1,0 +1,9 @@
+{
+  "name": "vpay-central-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev": "vercel dev"},
+  "dependencies": {},
+  "devDependencies": {"vercel": "^39.2.0"}
+}
