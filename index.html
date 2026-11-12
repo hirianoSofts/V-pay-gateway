@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Loja de demonstração com pagamento seguro através da VPay.">
+  <title>Loja Demo — Produto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f7f8fa;color:#15171a;font-family:'DM Sans',sans-serif}.wrap{max-width:1050px;margin:auto;padding:28px 22px}.nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0 34px}.brand{font-size:21px;font-weight:800;letter-spacing:-.8px}.tag{font-size:13px;color:#737984}.card{display:grid;grid-template-columns:1.05fr 1fr;background:#fff;border:1px solid #eceef1;border-radius:22px;overflow:hidden;box-shadow:0 15px 50px #1018280a}.visual{min-height:440px;background:linear-gradient(145deg,#e9efff,#dce6ff);display:grid;place-items:center;padding:30px}.product-art{width:min(290px,85%);aspect-ratio:1;border-radius:28px;background:linear-gradient(145deg,#fff,#dce4f5);display:grid;place-items:center;box-shadow:0 25px 55px #293b6324;font-size:94px}.info{padding:55px 48px;display:flex;flex-direction:column;justify-content:center}.eyebrow{font-size:12px;font-weight:800;letter-spacing:1.3px;color:#5369a5;text-transform:uppercase}.info h1{font-size:36px;letter-spacing:-1.5px;margin:12px 0}.desc{color:#707782;line-height:1.7;margin:0 0 24px}.price{font-size:29px;font-weight:800;margin-bottom:25px}.price small{font-size:13px;color:#8b929c;font-weight:500}.field{display:grid;gap:7px;margin-bottom:13px}.field label{font-size:13px;font-weight:700}.field input{width:100%;border:1px solid #e1e4e9;border-radius:10px;padding:13px 14px;font:inherit;outline:none}.field input:focus{border-color:#526fbd;box-shadow:0 0 0 3px #526fbd18}.btn{border:0;border-radius:11px;background:#17191d;color:#fff;font:700 15px 'DM Sans';padding:15px;cursor:pointer;margin-top:8px}.btn:disabled{opacity:.55;cursor:wait}.secure{font-size:12px;color:#858c96;text-align:center;margin-top:13px}.message{font-size:13px;color:#b42318;min-height:18px;margin-top:10px}.foot{text-align:center;color:#9399a2;font-size:12px;padding:25px}@media(max-width:760px){.wrap{padding:15px}.nav{padding-bottom:18px}.card{grid-template-columns:1fr}.visual{min-height:250px}.product-art{width:190px;font-size:70px}.info{padding:30px 23px}.info h1{font-size:29px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="nav"><div class="brand">LOJA<span style="color:#5874c7">.</span></div><div class="tag">Checkout seguro</div></header>
+    <section class="card">
+      <div class="visual"><div class="product-art" aria-label="Imagem ilustrativa do produto">🎧</div></div>
+      <div class="info">
+        <div class="eyebrow">Produto em destaque</div>
+        <h1>Auscultadores Studio</h1>
+        <p class="desc">Som imersivo, conforto durante todo o dia e um design minimalista. Produto de demonstração para testar a integração VPay.</p>
+        <div class="price">850 MT <small>· preço demonstrativo</small></div>
+        <form id="buyForm">
+          <div class="field"><label for="name">Nome completo</label><input id="name" required autocomplete="name" placeholder="O seu nome"></div>
+          <div class="field"><label for="email">Email</label><input id="email" type="email" required autocomplete="email" placeholder="voce@email.com"></div>
+          <div class="field"><label for="phone">Telefone (opcional)</label><input id="phone" autocomplete="tel" placeholder="+258 84 000 0000"></div>
+          <button class="btn" id="buyBtn" type="submit">Comprar agora · 850 MT</button>
+          <div class="message" id="message" role="status"></div>
+          <div class="secure">Pagamento processado pela VPay. Os dados do cartão/carteira são introduzidos no checkout VPay.</div>
+        </form>
+      </div>
+    </section>
+    <footer class="foot">© 2026 Loja Demo · Demonstração de integração</footer>
+  </main>
+  <script>
+    // Altere apenas esta URL quando publicar o backend central.
+    const PAYMENT_BACKEND = 'https://v-pay-gateway.vercel.app/';
+    // Este ID corresponde ao produto configurado no backend/config/products.js.
+    const PRODUCT_ID = 'headphones-demo';
+    const form = document.getElementById('buyForm');
+    const button = document.getElementById('buyBtn');
+    const message = document.getElementById('message');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault(); message.textContent = ''; button.disabled = true; button.textContent = 'A preparar pagamento…';
+      try {
+        if (PAYMENT_BACKEND.includes('SEU-BACKEND')) throw new Error('Configure a URL do seu backend no ficheiro index.html.');
+        const response = await fetch(`${PAYMENT_BACKEND}/api/checkout`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: PRODUCT_ID, quantity: 1, customer: {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim()
+          }})
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Não foi possível iniciar o pagamento.');
+        if (!data.checkoutUrl) throw new Error('O backend não recebeu o link de checkout da VPay.');
+        window.location.assign(data.checkoutUrl);
+      } catch (error) { message.textContent = error.message; button.disabled = false; button.textContent = 'Tentar novamente · 850 MT'; }
+    });
+  </script>
+</body>
+</html>
